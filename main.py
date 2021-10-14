@@ -9,6 +9,16 @@ playerL = (0,254,242,30,18,254,254,0)
 
 gameRunning = True
 
+'''
+Game States:
+
+playing - playing the game
+win - won the game
+lose - lost the game
+pause - paused the game
+'''
+gameState = "playing"
+
 class Player:
     def __init__(self, width, height):
         self.width = width
@@ -18,18 +28,29 @@ class Player:
         self.tile = round(self.maxTilesW / 2)
         self.direction = 0
         self.maxBullets = 3
+        self.sprite = playerC
+        self.offset = 2
     
+    def turn(self, dir):
+        if (dir == -1):
+            self.sprite = playerL
+        elif (dir == 0):
+            self.sprite = playerC
+        elif (dir == 1):
+            self.sprite = playerR
+        
     def move(self, dir):
         self.tile += dir
         self.direction = dir
+        self.turn(dir)
     
     def draw(self):
         if (self.direction == -1):
-            thumby.display.blit(playerL, self.tile * self.width, thumby.DISPLAY_H - (self.height + 2), self.width, self.height)
+            thumby.display.blit(self.sprite, self.tile * self.width, thumby.DISPLAY_H - (self.height + self.offset), self.width, self.height)
         elif (self.direction == 0):
-            thumby.display.blit(playerC, self.tile * self.width, thumby.DISPLAY_H - (self.height + 2), self.width, self.height)
+            thumby.display.blit(self.sprite, self.tile * self.width, thumby.DISPLAY_H - (self.height + self.offset), self.width, self.height)
         elif (self.direction == 1):
-            thumby.display.blit(playerR, self.tile * self.width, thumby.DISPLAY_H - (self.height + 2), self.width, self.height)
+            thumby.display.blit(self.sprite, self.tile * self.width, thumby.DISPLAY_H - (self.height + self.offset), self.width, self.height)
 
 class Dove:
     direction = 1
@@ -109,6 +130,7 @@ newGame()
 while (gameRunning):
     t0 = time.ticks_ms()   # Get time (ms)
     thumby.display.fill(0) # Fill canvas to black
+        
     
     if (Dove.numberofDoves > 0):
         if(thumby.buttonR.justPressed() == True):
@@ -124,6 +146,7 @@ while (gameRunning):
         #Shoot new bullet
         if ((thumby.buttonA.justPressed() or thumby.buttonB.justPressed() or thumby.buttonU.justPressed()) and bullet.speed == 0):
             bullet = Bullet(round((player.tile * player.width) + player.width / 2), thumby.DISPLAY_H - player.height - 5)
+            player.turn(0)
         
         #Draw every bullet
         bullet.update(t0)
