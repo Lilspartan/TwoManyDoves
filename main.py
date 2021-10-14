@@ -1,6 +1,7 @@
 import time
 import thumby
 import math
+import random
 
 # BITMAP: width: 8, height: 8
 playerR = (0,254,254,18,30,242,254,0)
@@ -56,6 +57,8 @@ class Dove:
     direction = 1
     moveDelay = 100
     numberofDoves = 7
+    attacked = False
+    shots = []
     
     def __init__(self, width, height, tileX, tileY):
         self.width = width
@@ -82,12 +85,20 @@ class Dove:
             elif (self.tileX < 0 and Dove.direction == -1):
                 Dove.direction = 1
     
+    def attack(self):
+        rnd = random.randint(0, 10)
+        if (rnd >= 7 and not Dove.attacked):
+            Dove.attacked = True
+            Dove.shots.append(DoveShot(self.height + 1, self.tileX * self.width))
+            
+    
     def move(self):
         if (self.alive == True):
             if (Dove.direction == 1):
                 self.tileX += 1
             elif (Dove.direction == -1):
                 self.tileX -= 1
+            self.attack()
     
     def draw(self):
         if (self.alive == True):
@@ -95,6 +106,24 @@ class Dove:
                 thumby.display.blit(self.spriteLeft, self.tileX * self.width, self.tileY * self.height, self.width, self.height)
             elif (Dove.direction == 1):
                 thumby.display.blit(self.spriteRight, self.tileX * self.width, self.tileY * self.height, self.width, self.height)
+
+class DoveShot:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+        self.speed = 1
+        self.sprite = (7, 7)
+        self.width = 2
+        self.height = 3
+
+    def update(self, t):
+        if (t % 5 == 0):
+            self.y += self.speed
+        if (self.y > thumby.DISPLAY_H + 5):
+            self.speed = 0
+        
+    def draw(self):
+        thumby.display.blit(self.sprite, self.x, self.y, self.width, self.height)
 
 class Bullet:
     def __init__(self, x, y):
@@ -112,7 +141,7 @@ class Bullet:
             self.speed = 0
         
     def draw(self):
-        thumby.display.blit(self.sprite, self.x, self.y, self.width, self.width)
+        thumby.display.blit(self.sprite, self.x, self.y, self.width, self.height)
         
 player = Player(8, 8)    
 bullet = Bullet(0, -10)
@@ -123,7 +152,6 @@ def newGame():
     #Make Doves
     for x in range(Dove.numberofDoves):
         doves.append(Dove(8, 8, x, 0));
-
 
 newGame()
 
@@ -156,12 +184,19 @@ while (gameRunning):
         for d in range(len(doves)):
             if (t0 % Dove.moveDelay == 0):
                 doves[d].checkWall()
-            
+        if (t0 % Dove.moveDelay == 0):  
+            Dove.attacked = False
+        
         for d in range(len(doves)):
             if (t0 % Dove.moveDelay == 0):
                 doves[d].move()
             doves[d].checkHit()
             doves[d].draw()
+        
+        #Draw dove attacks
+        for da in range(len(Dove.shots)):
+            Dove.shots[da].update(t0)
+            Dove.shots[da].draw()
         
         # Draw the player sprite
         player.draw()
