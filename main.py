@@ -53,78 +53,6 @@ class Player:
         elif (self.direction == 1):
             thumby.display.blit(self.sprite, self.tile * self.width, thumby.DISPLAY_H - (self.height + self.offset), self.width, self.height)
 
-class Dove:
-    direction = 1
-    moveDelay = 100
-    numberofDoves = 7
-    attacked = False
-    shots = []
-    
-    def __init__(self, width, height, tileX, tileY):
-        self.width = width
-        self.height = height
-        self.spriteLeft = (4,14,26,62,188,252,60,56)
-        self.spriteRight = (56,60,252,188,62,26,14,4)
-        self.alive = True
-        self.maxTilesW = round(thumby.DISPLAY_W / self.width)
-        self.maxTilesH = round(thumby.DISPLAY_H / self.height)
-        self.tileX = tileX
-        self.tileY = tileY
-        
-    def checkHit(self):
-        if (self.alive == True):
-            if ((bullet.y <= (self.tileY * self.height) + self.height and bullet.y >= self.tileY * self.height) and (bullet.x <= (self.tileX * self.width) + self.width and bullet.x >= self.tileX * self.width)):
-                self.alive = False
-                Dove.numberofDoves -= 1
-                bullet.y = -10
-    
-    def checkWall(self):    
-        if (self.alive == True):
-            if (self.tileX >= self.maxTilesW and Dove.direction == 1):
-                Dove.direction = -1
-            elif (self.tileX < 0 and Dove.direction == -1):
-                Dove.direction = 1
-    
-    def attack(self):
-        rnd = random.randint(0, 10)
-        if (rnd >= 7 and not Dove.attacked):
-            Dove.attacked = True
-            Dove.shots.append(DoveShot(self.height + 1, self.tileX * self.width))
-            
-    
-    def move(self):
-        if (self.alive == True):
-            if (Dove.direction == 1):
-                self.tileX += 1
-            elif (Dove.direction == -1):
-                self.tileX -= 1
-            self.attack()
-    
-    def draw(self):
-        if (self.alive == True):
-            if (Dove.direction == -1):
-                thumby.display.blit(self.spriteLeft, self.tileX * self.width, self.tileY * self.height, self.width, self.height)
-            elif (Dove.direction == 1):
-                thumby.display.blit(self.spriteRight, self.tileX * self.width, self.tileY * self.height, self.width, self.height)
-
-class DoveShot:
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
-        self.speed = 1
-        self.sprite = (7, 7)
-        self.width = 2
-        self.height = 3
-
-    def update(self, t):
-        if (t % 5 == 0):
-            self.y += self.speed
-        if (self.y > thumby.DISPLAY_H + 5):
-            self.speed = 0
-        
-    def draw(self):
-        thumby.display.blit(self.sprite, self.x, self.y, self.width, self.height)
-
 class Bullet:
     def __init__(self, x, y):
         self.x = x
@@ -142,25 +70,54 @@ class Bullet:
         
     def draw(self):
         thumby.display.blit(self.sprite, self.x, self.y, self.width, self.height)
+     
+class DoveObject:
+    doves = []
+    row1 = [1, 1, 1, 1, 1, 1]
+    row2 = [1, 1, 0, 1, 1, 0]
+    doves.append(row1)
+    doves.append(row2)
+    
+    def __init__(self, doveWidth, doveHeight):
+        self.width = doveWidth * len(DoveObject.doves[0])
+        self.height = doveHeight * len(DoveObject.doves)
+        self.tileX = 0
+        self.tileY = 0
+        self.doveWidth = doveWidth
+        self.doveHeight = doveHeight
+        self.direction = 1
+        self.spriteLeft = (4,14,26,62,188,252,60,56)
+        self.spriteRight = (56,60,252,188,62,26,14,4)
         
+    def drawBBox(self):
+        thumby.display.rect(self.tileX * self.doveWidth, self.tileY * self.doveHeight, (self.tileX * self.doveWidth) + self.width, (self.tileY * self.doveHeight) + self.height, 1)
+        
+    def displayDove(self, indexOuter, indexInner):
+        if (self.direction == 1):
+            thumby.display.blit(self.spriteRight, (self.tileX * self.doveWidth) + (indexInner * self.doveWidth), (indexOuter * self.doveHeight), self.doveWidth, self.doveHeight, 0)
+        if (self.direction == -1):
+            thumby.display.blit(self.spriteLeft, (self.tileX * self.doveWidth) + (indexInner * self.doveWidth), (indexOuter * self.doveHeight), self.doveWidth, self.doveHeight, 0)
+        
+    def draw(self):
+        for dr in range(len(DoveObject.doves)):
+            for d in range(len(DoveObject.doves[dr])):
+                if (DoveObject.doves[dr][d] == 1):
+                    self.displayDove(dr, d)
+        
+    # def turn(self, direction);
+    #     self.direction = direction
+    
 player = Player(8, 8)    
 bullet = Bullet(0, -10)
 
-doves = []
-        
-def newGame():
-    #Make Doves
-    for x in range(Dove.numberofDoves):
-        doves.append(Dove(8, 8, x, 0));
-
-newGame()
+doveObject = DoveObject(8, 8)
 
 while (gameRunning):
     t0 = time.ticks_ms()   # Get time (ms)
     thumby.display.fill(0) # Fill canvas to black
         
     
-    if (Dove.numberofDoves > 0):
+    if (2 > 0):
         if(thumby.buttonR.justPressed() == True):
             player.move(1)
         if(thumby.buttonL.justPressed() == True):
@@ -180,23 +137,12 @@ while (gameRunning):
         bullet.update(t0)
         bullet.draw()
         
-        #Draw doves
-        for d in range(len(doves)):
-            if (t0 % Dove.moveDelay == 0):
-                doves[d].checkWall()
-        if (t0 % Dove.moveDelay == 0):  
-            Dove.attacked = False
+        doveObject.drawBBox()
+        doveObject.draw()
         
-        for d in range(len(doves)):
-            if (t0 % Dove.moveDelay == 0):
-                doves[d].move()
-            doves[d].checkHit()
-            doves[d].draw()
-        
-        #Draw dove attacks
-        for da in range(len(Dove.shots)):
-            Dove.shots[da].update(t0)
-            Dove.shots[da].draw()
+        if (t0 % 100 == 0):
+            # doveObject.turn(-1)
+            thumby.display.drawText("h",0,0,0)
         
         # Draw the player sprite
         player.draw()
@@ -204,3 +150,5 @@ while (gameRunning):
         thumby.display.drawText("YOU WIN", 0, 0, 1)
     
     thumby.display.update()
+     
+    
