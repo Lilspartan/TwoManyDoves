@@ -4,9 +4,9 @@ import math
 import random
 
 # BITMAP: width: 8, height: 8
-playerR = (0,254,254,18,30,242,254,0)
-playerC = (0,254,242,30,30,242,254,0)
-playerL = (0,254,242,30,18,254,254,0)
+playerR = bytearray([0,255,255,49,63,241,255,0])
+playerC = bytearray([0,255,241,63,63,241,255,0])
+playerL = bytearray([0,255,241,63,49,255,255,0])
 
 gameRunning = True
 
@@ -24,8 +24,8 @@ class Player:
     def __init__(self, width, height):
         self.width = width
         self.height = height
-        self.maxTilesW = round(thumby.DISPLAY_W / self.width)
-        self.maxTilesH = round(thumby.DISPLAY_H / self.height)
+        self.maxTilesW = round(thumby.display.width / self.width)
+        self.maxTilesH = round(thumby.display.height / self.height)
         self.tile = round(self.maxTilesW / 2)
         self.direction = 0
         self.maxBullets = 3
@@ -47,11 +47,11 @@ class Player:
     
     def draw(self):
         if (self.direction == -1):
-            thumby.display.blit(self.sprite, self.tile * self.width, thumby.DISPLAY_H - (self.height + self.offset), self.width, self.height)
+            thumby.display.blit(self.sprite, self.tile * self.width, thumby.display.height - (self.height + self.offset), self.width, self.height, 0, 0, 0)
         elif (self.direction == 0):
-            thumby.display.blit(self.sprite, self.tile * self.width, thumby.DISPLAY_H - (self.height + self.offset), self.width, self.height)
+            thumby.display.blit(self.sprite, self.tile * self.width, thumby.display.height - (self.height + self.offset), self.width, self.height, 0, 0, 0)
         elif (self.direction == 1):
-            thumby.display.blit(self.sprite, self.tile * self.width, thumby.DISPLAY_H - (self.height + self.offset), self.width, self.height)
+            thumby.display.blit(self.sprite, self.tile * self.width, thumby.display.height - (self.height + self.offset), self.width, self.height, 0, 0, 0)
 
 class Bullet:
     def __init__(self, x, y):
@@ -59,7 +59,7 @@ class Bullet:
         self.y = y
         self.width = 2
         self.height = 3
-        self.sprite = (7, 7)
+        self.sprite = bytearray([3])
         self.speed = 1
         
     def update(self, t):
@@ -69,7 +69,7 @@ class Bullet:
             self.speed = 0
         
     def draw(self):
-        thumby.display.blit(self.sprite, self.x, self.y, self.width, self.height)
+        thumby.display.blit(self.sprite, self.x, self.y, self.width, self.height, 0, 0, 0)
      
 class DoveObject:
     doves = []
@@ -86,17 +86,17 @@ class DoveObject:
         self.doveWidth = doveWidth
         self.doveHeight = doveHeight
         self.direction = 1
-        self.spriteLeft = (4,14,26,62,188,252,60,56)
-        self.spriteRight = (56,60,252,188,62,26,14,4)
+        self.spriteLeft = bytearray([253,248,226,64,1,193,195,231])
+        self.spriteRight = bytearray([24,60,62,254,191,29,7,2])
         
     def drawBBox(self):
-        thumby.display.rect(self.tileX * self.doveWidth, self.tileY * self.doveHeight, (self.tileX * self.doveWidth) + self.width, (self.tileY * self.doveHeight) + self.height, 1)
+        thumby.display.drawRectangle(self.tileX * self.doveWidth, self.tileY * self.doveHeight, (self.tileX * self.doveWidth) + self.width, (self.tileY * self.doveHeight) + self.height, 1)
         
     def displayDove(self, indexOuter, indexInner):
         if (self.direction == 1):
-            thumby.display.blit(self.spriteRight, (self.tileX * self.doveWidth) + (indexInner * self.doveWidth), (indexOuter * self.doveHeight), self.doveWidth, self.doveHeight, 0)
+            thumby.display.blit(self.spriteRight, (self.tileX * self.doveWidth) + (indexInner * self.doveWidth), (indexOuter * self.doveHeight), self.doveWidth, self.doveHeight, 0, 0, 0)
         if (self.direction == -1):
-            thumby.display.blit(self.spriteLeft, (self.tileX * self.doveWidth) + (indexInner * self.doveWidth), (indexOuter * self.doveHeight), self.doveWidth, self.doveHeight, 0)
+            thumby.display.blit(self.spriteLeft, (self.tileX * self.doveWidth) + (indexInner * self.doveWidth), (indexOuter * self.doveHeight), self.doveWidth, self.doveHeight, 0, 0, 0)
         
     def draw(self):
         for dr in range(len(DoveObject.doves)):
@@ -130,7 +130,7 @@ while (gameRunning):
         
         #Shoot new bullet
         if ((thumby.buttonA.justPressed() or thumby.buttonB.justPressed() or thumby.buttonU.justPressed()) and bullet.speed == 0):
-            bullet = Bullet(round((player.tile * player.width) + player.width / 2), thumby.DISPLAY_H - player.height - 5)
+            bullet = Bullet(round((player.tile * player.width) + player.width / 2), thumby.display.height - player.height - 5)
             player.turn(0)
         
         #Draw every bullet
