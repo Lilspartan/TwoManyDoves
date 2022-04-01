@@ -86,7 +86,9 @@ class DoveObject:
         self.doveWidth = doveWidth
         self.doveHeight = doveHeight
         self.direction = 1
-        self.spriteLeft = bytearray([253,248,226,64,1,193,195,231])
+        self.maxTilesW = round(thumby.display.width / self.doveWidth)
+        self.maxTilesH = round(thumby.display.height / self.doveHeight)
+        self.spriteLeft = bytearray([2,7,29,191,254,62,60,24])
         self.spriteRight = bytearray([24,60,62,254,191,29,7,2])
         
     def drawBBox(self):
@@ -104,8 +106,21 @@ class DoveObject:
                 if (DoveObject.doves[dr][d] == 1):
                     self.displayDove(dr, d)
         
-    # def turn(self, direction);
-    #     self.direction = direction
+    def turn(self, direction):
+        self.direction = direction
+        
+    def move(self):
+        if (self.direction == 1):
+            self.tileX += 1
+        else:
+            self.tileX -= 1
+            
+        print(self.maxTilesW)
+        
+        if (self.tileX == 3):
+            self.direction = -1
+        elif (self.tileX == 0):
+            self.direction = 1
     
 player = Player(8, 8)    
 bullet = Bullet(0, -10)
@@ -137,12 +152,11 @@ while (gameRunning):
         bullet.update(t0)
         bullet.draw()
         
-        doveObject.drawBBox()
+        # doveObject.drawBBox()
         doveObject.draw()
         
         if (t0 % 100 == 0):
-            # doveObject.turn(-1)
-            thumby.display.drawText("h",0,0,0)
+            doveObject.move();
         
         # Draw the player sprite
         player.draw()
